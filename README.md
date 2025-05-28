@@ -25,14 +25,6 @@
 
 ### 🎯 Getting Started
 
-Com o docker instalado, rode o comando:
-
-```bash
-docker-compose up --build
-```
-
-Para utilizar o projeto sem o docker, é necessário entrar em cada pasta e realizar os seguintes comandos:
-
 Instalar as dependências
 
 ```bash
