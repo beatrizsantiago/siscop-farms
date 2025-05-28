@@ -12,6 +12,7 @@ import { firebaseFarm } from '@fb/farm';
 import AddFarmUseCase from '@usecases/farms/addFarm';
 import ErrorLabel from '@components/ErrorLabel';
 import useGetProducts from '@hooks/useGetProducts';
+import { toast } from 'react-toastify';
 
 const DEFAULT_CENTER = {
   lat: -23.55052,
@@ -68,7 +69,7 @@ const FormContainer = ({ handleClose }:Props) => {
 
       handleClose();
     } catch (error) {
-      console.log(error);
+      toast.error('Erro ao adicionar fazenda. Tente novamente.');
     } finally {
       setLoading(false);
     }

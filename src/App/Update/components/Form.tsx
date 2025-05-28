@@ -13,6 +13,7 @@ import UpdateFarmUseCase from '@usecases/farms/updateFarm';
 import ErrorLabel from '@components/ErrorLabel';
 import useGetProducts from '@hooks/useGetProducts';
 import Farm from '@domain/entities/Farm';
+import { toast } from 'react-toastify';
 
 type Props = {
   handleClose: () => void;
@@ -71,7 +72,7 @@ const FormContainer = ({ farm, handleClose }:Props) => {
 
       handleClose();
     } catch (error) {
-      console.log(error);
+      toast.error('Erro ao atualizar a fazenda. Tente novamente.');
     } finally {
       setLoading(false);
     }
