@@ -33,6 +33,13 @@ const FormContainer = ({ handleClose }:Props) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Errors>(null);
 
+  const clearData = () => {
+    setSelectedPosition(null);
+    setSelectedProductIds([]);
+    setLoading(false);
+    setErrors(null);
+  };
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -67,6 +74,7 @@ const FormContainer = ({ handleClose }:Props) => {
         item: response,
       });
 
+      clearData();
       handleClose();
     } catch (error) {
       toast.error('Erro ao adicionar fazenda. Tente novamente.');
@@ -86,6 +94,11 @@ const FormContainer = ({ handleClose }:Props) => {
 
   const handleSelectChange = (event: any) => {
     setSelectedProductIds(event.target.value);
+  };
+
+  const onCancelClick = () => {
+    clearData();
+    handleClose();
   };
 
   if (productsLoading) return <CircularProgress />;
@@ -163,7 +176,7 @@ const FormContainer = ({ handleClose }:Props) => {
       </Grid>
 
       <Box marginTop={4} display="flex" justifyContent="space-between">
-        <Button onClick={handleClose} variant="outlined" color="error">
+        <Button onClick={onCancelClick} variant="outlined" color="error">
           Cancelar
         </Button>
         <Button
