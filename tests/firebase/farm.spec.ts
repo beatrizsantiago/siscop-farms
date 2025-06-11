@@ -15,7 +15,7 @@ jest.mock('firebase/firestore', () => {
     addDoc: jest.fn(),
     collection: jest.fn(),
     deleteDoc: jest.fn(),
-    doc: jest.fn(),
+    doc: jest.fn((_, __, id) => ({ id })),
     getDocs: jest.fn(),
     updateDoc: jest.fn(),
     query: jest.fn(),
@@ -47,14 +47,16 @@ describe('FirebaseFarm', () => {
   });
 
   it('should get all farms from Firestore', async () => {
-    const mockSnapshot = {
+    (getDocs as jest.Mock).mockResolvedValue({
       docs: [
         {
           id: 'farm1',
           data: () => ({
             name: 'Farm A',
             geolocation: { lat: 0, lng: 0 },
-            available_products: [],
+            available_products: [
+              { id: 'Tomato' },
+            ],
           }),
         },
         {
@@ -62,34 +64,53 @@ describe('FirebaseFarm', () => {
           data: () => ({
             name: 'Farm B',
             geolocation: { lat: 1, lng: 1 },
-            available_products: ['Banana'],
+            available_products: [
+              { id: 'Banana' },
+            ],
           }),
         },
       ],
-    };
-
-    (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+    });
 
     const result = await firebaseFarm.getAll();
 
     expect(getDocs).toHaveBeenCalled();
     expect(result).toEqual([
-      { id: 'farm1', name: 'Farm A', geolocation: { lat: 0, lng: 0 }, available_products: [] },
-      { id: 'farm2', name: 'Farm B', geolocation: { lat: 1, lng: 1 }, available_products: ['Banana'] },
+      {
+        id: 'farm1',
+        name: 'Farm A',
+        geolocation: { lat: 0, lng: 0 },
+        available_products: ['Tomato'],
+      },
+      {
+        id: 'farm2',
+        name: 'Farm B',
+        geolocation: { lat: 1, lng: 1 },
+        available_products: ['Banana'],
+      },
     ]);
   });
 
   it('should update an existing farm', async () => {
-    (doc as jest.Mock).mockReturnValue({});
+    const mockFarmRef = { path: 'farms/farm123' };
+    const productRefs = [{ id: 'Tomato' }, { id: 'Lettuce' }];
+
+    (doc as jest.Mock).mockImplementation((_, collectionName, id) => {
+      if (collectionName === 'products') return { id };
+      if (collectionName === 'farms') return mockFarmRef;
+      return {};
+    });
+
     (updateDoc as jest.Mock).mockResolvedValue(undefined);
+
     await firebaseFarm.update(mockFarm);
 
     expect(updateDoc).toHaveBeenCalledWith(
-      {},
+      mockFarmRef,
       {
         name: mockFarm.name,
         geolocation: mockFarm.geolocation,
-        available_products: mockFarm.available_products,
+        available_products: productRefs,
       }
     );
   });
