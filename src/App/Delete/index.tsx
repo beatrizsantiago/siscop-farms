@@ -30,7 +30,11 @@ const Delete = ({ farm, closeMakerInfo }:Props) => {
       });
       closeMakerInfo();
       toggleDialog();
-    } catch {
+    } catch (error: any) {
+      if ('message' in error && typeof error.message === 'string' && error.message.includes('REFERENCE_ERROR')) {
+        toast.error('A fazenda não pode ser excluída porque está referenciada em outros registros.');
+        return;
+      }
       toast.error('Erro ao excluir a fazenda. Tente novamente.');
     }
   };

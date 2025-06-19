@@ -115,10 +115,36 @@ describe('FirebaseFarm', () => {
     );
   });
 
-  it('should delete a farm by ID', async () => {
-    await firebaseFarm.delete(mockFarm.id);
+  it('should return true if farm is referenced', async () => {
+    (getDocs as jest.Mock).mockResolvedValueOnce({
+      empty: false,
+    });
 
-    expect(deleteDoc).toHaveBeenCalledWith(expect.anything());
+    const result = await firebaseFarm.isFarmReferenced('goals', 'farm1');
+    expect(result).toBe(true);
+  });
+
+  it('should return false if farm is not referenced', async () => {
+    (getDocs as jest.Mock).mockResolvedValueOnce({
+      empty: true,
+    });
+
+    const result = await firebaseFarm.isFarmReferenced('goals', 'farm1');
+    expect(result).toBe(false);
+  });
+
+  it('should throw if farm is referenced in any collection', async () => {
+    (getDocs as jest.Mock).mockResolvedValueOnce({ empty: false });
+
+    await expect(firebaseFarm.delete('farm1')).rejects.toThrow('REFERENCE_ERROR:goals');
+  });
+
+  it('should delete the farm if not referenced', async () => {
+    (getDocs as jest.Mock).mockResolvedValue({ empty: true });
+
+    await firebaseFarm.delete('farm1');
+
+    expect(deleteDoc).toHaveBeenCalled();
   });
 
   it('should search farms by name', async () => {

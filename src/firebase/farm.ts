@@ -2,8 +2,9 @@ import { FarmRepository } from '@domain/repositories/FarmRepository';
 import {
   addDoc, collection, deleteDoc, doc,
   DocumentReference,
-  endAt, getDocs, orderBy, query,
+  endAt, getDocs, limit, orderBy, query,
   startAt, updateDoc,
+  where,
 } from 'firebase/firestore';
 import Farm from '@domain/entities/Farm';
 
@@ -67,7 +68,23 @@ class FirebaseFarm implements FarmRepository {
     return farm;
   }
 
+  async isFarmReferenced(collectionName: string, farmId: string): Promise<boolean> {
+    const ref = collection(firestore, collectionName);
+    const q = query(ref, where('farm_id', '==', doc(firestore, 'farms', farmId)), limit(1));
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  }
+
   async delete(id: string): Promise<void> {
+    const collectionsToCheck = ['goals', 'inventory', 'kardex', 'sales'];
+
+    for (const col of collectionsToCheck) {
+      const referenced = await this.isFarmReferenced(col, id);
+      if (referenced) {
+        throw new Error(`REFERENCE_ERROR:${col}`);
+      }
+    }
+
     return await deleteDoc(doc(firestore, 'farms', id));
   }
 
