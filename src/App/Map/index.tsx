@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useFarmContext } from '@App/context';
-import { useMediaQuery, useTheme } from '@mui/material';
+import { Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 
 import MakerInfo from './components/MakerInfo';
 
@@ -14,6 +14,14 @@ const Map = () => {
   const [selectedFarmIndex, setSelectedFarmIndex] = useState<number | null>(null);
 
   const center = state.farms[0]?.geolocation || { _lat: 0, _long: 0 };
+
+  if (state.loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center">
+        <CircularProgress />
+      </Box>
+    )
+  };
 
   return (
     <GoogleMap
